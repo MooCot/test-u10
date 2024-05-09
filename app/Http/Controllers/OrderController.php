@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DeliveryFacade;
+use App\Models\Service\DeliveryFacade;
+use Illuminate\Http\Request;
+use App\Models\Parcel;
+use App\Models\Sender;
+use App\Models\Recipient;
 
 class OrderController extends Controller
 {
@@ -13,11 +17,25 @@ class OrderController extends Controller
         $this->deliveryFacade = $deliveryFacade;
     }
 
-    public function sendOrder()
+    public function sendOrder(Request $request)
     {
-        // Логіка обробки замовлення
 
-        // Відправка замовлення до служби доставки
+        $sender = Sender::create([
+            'name' => $request->sender->id,
+            'email' => $request->sender->name,
+        ]);
+
+        $sender = Parcel::create([
+            'order_id' => $request->sender->parcel->order_id,
+            'name' => $request->sender->parcel->name,
+            'sender_id' => $sender->id,
+        ]);
+
+        $sender = Recipient::create([
+            'id' => $request->recipient->id,
+            'name' => $request->recipient->name,
+        ]);
+        $orderData = $request->all();
         $this->deliveryFacade->sendToService('nova_poshta', $orderData);
 
         return response()->json(['message' => 'Order sent successfully']);
